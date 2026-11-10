@@ -24,7 +24,6 @@ class CardDeliveryOrderTest {
 
     @BeforeEach
     void setUp() {
-        Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080";
         Configuration.timeout = 15000;
         Configuration.headless = Boolean.parseBoolean(System.getProperty("selenide.headless", "false"));
@@ -32,16 +31,20 @@ class CardDeliveryOrderTest {
         planningDate = LocalDate.now().plusDays(3)
                 .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
 
-        ChromeDriverService service = new ChromeDriverService.Builder()
-                .usingDriverExecutable(new java.io.File("C:\\Users\\Maximys\\IdeaProjects\\HW_selenide_1\\drivers\\chromedriver.exe"))
-                .build();
+        java.io.File driverFile = new java.io.File("drivers/chromedriver.exe");
+        if (driverFile.exists()) {
+            ChromeDriverService service = new ChromeDriverService.Builder()
+                    .usingDriverExecutable(driverFile)
+                    .build();
 
-        ChromeOptions options = new ChromeOptions();
-        if (Configuration.headless) {
-            options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage");
+            ChromeOptions options = new ChromeOptions();
+            if (Configuration.headless) {
+                options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage");
+            }
+
+            WebDriverRunner.setWebDriver(new ChromeDriver(service, options));
         }
-
-        WebDriverRunner.setWebDriver(new ChromeDriver(service, options));
+        // если файла нет (CI) — Selenide сам создаст драйвер через Selenium Manager
 
         open("http://localhost:9999");
     }

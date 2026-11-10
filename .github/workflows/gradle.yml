@@ -1,0 +1,47 @@
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Start SUT (app-card-delivery.jar)
+        run: |
+          java -jar ./artifacts/app-card-delivery.jar &
+          echo "SUT_PID=$!" >> $GITHUB_ENV
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:9999/ > /dev/null; then
+              echo "SUT is up"
+              break
+            fi
+            echo "Waiting for SUT..."
+            sleep 2
+          done
+
+      - name: Run tests with Gradle
+        run: ./gradlew test --no-daemon -Dselenide.headless=true
+
+      - name: Stop SUT
+        if: always()
+        run: kill $SUT_PID || true
