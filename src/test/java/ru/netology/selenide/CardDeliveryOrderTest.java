@@ -77,6 +77,6 @@ class CardDeliveryOrderTest {
         $("[data-test-id='notification']")
                 .shouldBe(Condition.visible, Duration.ofSeconds(15))
                 .shouldHave(Condition.text("Успешно"), Duration.ofSeconds(15))
-                .shouldHave(Condition.text(planningDate), Duration.ofSeconds(15));
+                .shouldHave(Condition.text("01.01.1990"), Duration.ofSeconds(15));
     }
 }
